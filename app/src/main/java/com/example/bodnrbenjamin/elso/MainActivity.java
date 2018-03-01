@@ -6,29 +6,33 @@ import com.example.usbseriallib.usbserial.util.HexDump;
 import com.example.usbseriallib.usbserial.driver.UsbSerialProber;
 
 import android.app.PendingIntent;
+import android.app.Activity;
 import android.content.Intent;
-import android.util.Log;
-import android.widget.TextView;
 import android.content.Context;
+import android.graphics.Bitmap;
+import android.graphics.Canvas;
+import android.graphics.Color;
+import android.graphics.Paint;
 import android.hardware.usb.UsbConstants;
 import android.hardware.usb.UsbDeviceConnection;
-import android.support.v7.app.AppCompatActivity;
-import android.os.Bundle;
-import android.view.View;
-import android.app.Activity;
-import android.view.Menu;
-import android.widget.EditText;
-import android.widget.Button;
 import android.hardware.usb.UsbManager;
 import android.hardware.usb.UsbInterface;
-import android.hardware.usb.UsbDeviceConnection;
 import android.hardware.usb.UsbEndpoint;
 import android.hardware.usb.UsbDevice;
+import android.os.Bundle;
+import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
+import android.view.LayoutInflater;
+import android.view.ViewGroup;
+import android.view.Menu;
+import android.view.View;
+import android.widget.ImageView;
+import android.widget.TextView;
+import android.widget.EditText;
+import android.widget.Button;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
-import android.view.ViewGroup;
 import android.widget.TwoLineListItem;
-import android.view.LayoutInflater;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -36,9 +40,9 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.lang.String;
 import java.io.IOException;
+import java.lang.Math.*;
 
 public class MainActivity extends AppCompatActivity {
-
 
     private Button button;
     private Button button2;
@@ -58,6 +62,23 @@ public class MainActivity extends AppCompatActivity {
 
     private static String ACTION_USB_PERMISSION = "com.example.bodnrbenjamin.elso";
 
+    private Paint paint = new Paint();
+    private Paint BackgroundPaint = new Paint();
+
+    private ImageView mImageView;
+
+    private Bitmap bitmap = Bitmap.createBitmap(100,100,Bitmap.Config.ARGB_8888);
+
+    private Canvas canvas = new Canvas(bitmap);
+
+    float[] sinus = new float[100];
+    private int lineID=1;
+    private LineDrawer line1;
+private float num = (float) 1.6;
+    public int[] asd = new int[1];
+    private LineDrawer Lines;
+    private int x;
+    private int y;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -69,42 +90,66 @@ public class MainActivity extends AppCompatActivity {
         textView2 = findViewById(R.id.textView2);
         textView3 = findViewById(R.id.textView3);
         textView4 = findViewById(R.id.textView4);
-        ListView = findViewById(R.id.ListView);
-
-
-
-
-        textView.setText("ide belépett");
-        ListView.setAdapter(mAdapter);
+        //ListView = findViewById(R.id.ListView);
+        //ListView.setAdapter(mAdapter);
+        mImageView = (ImageView) findViewById(R.id.imageView);
+        int mul=10;
+        for(int looper=0;looper<sinus.length;looper++)
+        {
+            sinus[looper] = (float) Math.sin((double) Math.PI/(sinus.length/2)*looper)*mul+mul;
+        }
+        BackgroundPaint.setColor(Color.WHITE);
+        paint.setColor(Color.BLUE);
+        BackgroundPaint.setColor(Color.WHITE);
+        asd[0]=Color.RED;
+        line1 = new LineDrawer(bitmap,mImageView);
+        textView.setText(Integer.toString(bitmap.getPixel(20,60)));
+        x=0;
+        y=0;
     }
 
-    public void buttonOnClick(View v)
+    public void button2OnClick(View v)
     {
 
-        button.setText("006");
-
-        String YOUR_DEVICE_NAME= "/dev/bus/usb/001/";
+        line1.addLine(x,20,60,70,Color.RED, lineID);
+        lineID++;
+        x+=5;
+        //canvas.drawLine(0,0,20,20,paint);
+        //canvas.drawLine(20,30,60,80,paint);
+        textView.setText("Height: "+Integer.toString(bitmap.getHeight()));
+        textView2.setText("Width: "+Integer.toString(bitmap.getWidth()));
+        textView4.setText(Integer.toString(bitmap.getByteCount()));
+        //line1.setLine(0,0,100,100);
         UsbManager manager = (UsbManager) getSystemService(Context.USB_SERVICE);
         List<UsbSerialDriver> availableDrivers = UsbSerialProber.getDefaultProber().findAllDrivers(manager);
-        if (availableDrivers.isEmpty()) {
-            textView4.setText("ide belépett 1");
+        HashMap usbDevices = manager.getDeviceList();
+        textView.setText(Integer.toString(bitmap.getPixel(20,60)));
+        if(usbDevices.isEmpty())
+        {
+            textView3.setText("ide belépett igen");
             return;
         }
-        textView.setText(Integer.toString(availableDrivers.size()));
+        else
+            textView3.setText("ide belépett");
+
+        /*if (availableDrivers.isEmpty()) {
+            textView3.setText("ide belépett");
+            textView.setText("Available drivers: "+Integer.toString(availableDrivers.size()));
+            textView2.setText("No serial device");
+            return;
+        }
+        textView.setText("Available drivers: "+Integer.toString(availableDrivers.size()));
         UsbSerialDriver driver = availableDrivers.get(0);
-        textView.setText(driver.toString());
+        textView2.setText(driver.toString());
         PendingIntent mPermissionIntent = PendingIntent.getBroadcast(this,0,new Intent(ACTION_USB_PERMISSION),0);
         manager.requestPermission(driver.getDevice(),mPermissionIntent);
         UsbDeviceConnection connection = manager.openDevice(driver.getDevice());
         if (connection == null) {
             // You probably need to call UsbManager.requestPermission(driver.getDevice(), ..)
-            textView4.setText("ide belépett 2");
             return;
         }
         UsbSerialPort port = driver.getPorts().get(0);
-        textView2.setText("ide belépett");
         try {
-            textView3.setText("ide belépett");
             port.open(connection);
             port.setParameters(115200, 8, UsbSerialPort.STOPBITS_1, UsbSerialPort.PARITY_NONE);
 
@@ -119,7 +164,7 @@ public class MainActivity extends AppCompatActivity {
             // Deal with error.
         } finally {
             //port.close();
-        }
+        }*/
         /*Context context = this;
         UsbManager manager = (UsbManager)getSystemService(Context.USB_SERVICE);
         UsbInterface Interface = null;
@@ -168,4 +213,23 @@ public class MainActivity extends AppCompatActivity {
         }*/
 
     }
+    public void buttonOnClick(View v)
+    {
+        long t1 = System.currentTimeMillis();
+        asd[0] = Color.YELLOW;
+        line1.modifyLine(1, 0,50,70,70,Color.BLUE);
+        line1.modifyLine(2,0,70,70,70);
+        line1.modifyLine(3, Color.GREEN);
+        line1.deleteLine(5);
+        long t2 = System.currentTimeMillis();
+        long dt=t2-t1;
+        textView.setText("t1= "+Long.toString(t1));
+        textView2.setText("t2= "+Long.toString(t2));
+        textView3.setText("dt= "+Long.toString(dt));
+        num-=0.1;
+        //canvas.drawColor(Color.WHITE);
+        //mImageView.setImageBitmap(bitmap);
+        //line1.clearLine();
+    }
 }
+
